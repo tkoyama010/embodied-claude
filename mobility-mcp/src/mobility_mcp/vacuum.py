@@ -102,6 +102,18 @@ class VacuumMobilityController:
         await self._send_direction(DIRECTION_STOP)
         return "Stopped."
 
+    async def start_cleaning(self) -> str:
+        """Start smart cleaning mode and leave the charging dock."""
+        cloud = self._ensure_cloud()
+        commands = {"commands": [{"code": "mode", "value": "smart"}]}
+        result = await asyncio.to_thread(
+            cloud.sendcommand, self._config.device_id, commands
+        )
+        logger.info("Sent start cleaning command -> %s", result)
+        if isinstance(result, dict) and result.get("success"):
+            return "Started smart cleaning. Moving away from dock."
+        return f"Start cleaning command sent (result: {result})."
+
     async def return_to_dock(self) -> str:
         """Send the vacuum back to its charging dock."""
         cloud = self._ensure_cloud()
